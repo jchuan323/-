@@ -1,108 +1,90 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX 5
-//定义队列 
+//定义队列结构 
 typedef struct Queue{
-	int items[MAX];
-	int front;
-	int rear;
-}Queue;
-void initQueue(Queue *q){
-	q->front=-1;
-	q->rear=-1;
-}
-//判空 
-int isEmpty(Queue *q)
-{
-	return q->front==-1;
- } 
-//判满 
-int isFull(Queue *q){
-	return q->rear==MAX-1;
+	int data;
+	struct Queue *next;
+}Q;
+Q *front=NULL;
+Q *rear=NULL;
+//初始化
+void initQueue(){
+	front=rear=(Q*)malloc(sizeof(Q));
+	front->next=NULL;
 } 
-//入队 
-void enQueue(Queue *q,int value){
-	if(isFull(q))
-	{
-		printf("队列已满，无法入队！\n");
-	}
-	else{
-		if(q->front==-1){
-			q->front=0;
-			
-		}
-		q->rear++;
-		q->items[q->rear]=value;
-		printf("元素 %d 已入队！\n",value);	
-	}
-}
-//出队
-int deQueue(Queue *q){
-	int item;
-	if(isEmpty(q)){
-		printf("队列为空，不能出队！");
-		return -1;
-	}
-	else{
-		item = q->items[q->front];
-        q->front++;
-        if (q->front > q->rear) {
-            // 重置队列
-            q->front = q->rear = -1;
-        }
-        return item;
-	}
-} 
-//查看队顶元素 
-int peek(Queue *q){
-	if(isEmpty(q)){
-		printf("队列为空，没有队顶元素");
-		return -1; 
-	} 
-	else{
-		return q->items[q->front];
-	} 
-}
-//打印元素
-void printQueue(Queue *q){
-    if (isEmpty(q)) {
-        printf("队列为空！\n");
-    } else {
-        printf("队列中的元素: ");
-        for (int i = q->front; i <= q->rear; i++) {
-            printf("%d ", q->items[i]);
-        }
-        printf("\n");
+//入队
+void enQueue(int data){
+	Q *s = (Q*)malloc(sizeof(Q)); // 为新元素分配空间
+    if (!s) {
+        printf("内存分配失败\n");
+        return;
     }
+	s->data=data;
+	s->next=NULL;
+	if(front==NULL){
+		front=s;
+		rear=s;
+	}
+	else{
+		rear->next=s;
+		rear=s;
+	}
+ 
 } 
+//出队
+int deQueue(){
+	if(front==NULL){
+		printf("队空，无法出队");
+		return -1; 
+	}
+	Q* temp=front;
+	int data=temp->data;
+	front=front->next;
+	if(front==NULL){
+		rear=NULL;
+	}
+	free(temp);
+	return data;
+}
+ 
+//打印队列元素
+void printQueue(){
+	if(front==NULL){
+		printf("队空，无法打印"); 
+		return ; 
+	} 
+	Q *temp=front->next;
+	while(temp!=NULL)
+	{
+		printf("%d ",temp->data);
+		temp=temp->next;
+	}
+	printf("\n");
+} 
+//主函数 
 int main()
 {
-	struct Queue q;
-	initQueue(&q);
-	int data,n;
-	printf("请输入你要输入的元素个数:");
-
+	initQueue();
+	int n;
+	printf("请输入您要输入的元素个数：\n");
 	scanf("%d",&n);
-	for(int i=1;i<=n;i++) {	
-		printf("请输入你要输入的元素:");
+	int data;
+	printf("请输入您要输入的元素");
+	for(int i=0;i<n;i++)
+	{
 		scanf("%d",&data);
-		enQueue(&q,data);
-	}
-	printQueue(&q);
-	printf("出队元素: %d\n", deQueue(&q));
-    printf("队列头元素: %d\n", peek(&q));
-    printQueue(&q);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
+		enQueue(data); 
+	} 
+	printf("队列的元素为:");
+	printQueue();
+	printf("\n");
+	deQueue();
+	printf("出队后的队列为:");
+	printQueue();
+	printf("\n");
+	printf("出队后的队列为:");
+	deQueue();
+	printQueue();
+ 	return 0;
+ } 
+ 
