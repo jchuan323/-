@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教材订购管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .nav {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .nav button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex: 1;
+            min-width: 120px;
+        }
+        .nav button:hover {
+            background: #764ba2;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            min-width: 800px;
+        }
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+        .table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .table tr:hover {
+            background-color: #e9ecef;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #764ba2;
+        }
+        .btn-danger {
+            background: #dc3545;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .search-box input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        @media (max-width: 768px) {
+            .nav {
+                flex-direction: column;
+            }
+            .nav button {
+                width: 100%;
+            }
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>教材订购管理系统</h1>
+            <p>实现教材订购全流程管理</p>
+        </div>
+
+        <div class="nav">
+            <button onclick="showSection('dashboard')">📊 系统概览</button>
+            <button onclick="showSection('textbooks')">📚 教材管理</button>
+            <button onclick="showSection('students')">👥 学生管理</button>
+            <button onclick="showSection('orders')">🛒 订购登记</button>
+            <button onclick="showSection('payments')">💰 收费管理</button>
+            <button onclick="showSection('distributions')">📦 发放管理</button>
+        </div>
+
+        <!-- 系统概览 -->
+        <div id="dashboard-section" class="section active">
+            <h2>系统概览</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>教材种类</h3>
+                    <div class="stat-number" id="textbook-count">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>学生数量</h3>
+                    <div class="stat-number" id="student-count">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>待处理订单</h3>
+                    <div class="stat-number" id="pending-orders">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>待收费金额</h3>
+                    <div class="stat-number" id="pending-amount">¥0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 教材管理区域 -->
+        <div id="textbooks-section" class="section">
+            <h2>教材管理</h2>
+            <div class="search-box">
+                <input type="text" id="textbook-search" placeholder="搜索教材名称、ISBN或作者..." onkeyup="searchTextbooks()">
+                <button class="btn" onclick="showTextbookModal()">添加教材</button>
+            </div>
+            <div class="table-container">
+                <table class="table" id="textbooks-table">
+                    <thead>
+                        <tr>
+                            <th>ISBN</th>
+                            <th>书名</th>
+                            <th>作者</th>
+                            <th>出版社</th>
+                            <th>版次</th>
+                            <th>价格</th>
+                            <th>库存</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 学生管理区域 -->
+        <div id="students-section" class="section">
+            <h2>学生管理</h2>
+            <div class="search-box">
+                <input type="text" id="student-search" placeholder="搜索学生姓名、学号或班级..." onkeyup="searchStudents()">
+                <button class="btn" onclick="showStudentModal()">添加学生</button>
+            </div>
+            <div class="table-container">
+                <table class="table" id="students-table">
+                    <thead>
+                        <tr>
+                            <th>学号</th>
+                            <th>姓名</th>
+                            <th>班级</th>
+                            <th>联系电话</th>
+                            <th>邮箱</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 订购登记区域 -->
+        <div id="orders-section" class="section">
+            <h2>订购登记</h2>
+            <div class="search-box">
+                <input type="text" id="order-search" placeholder="搜索订单..." onkeyup="searchOrders()">
+                <button class="btn" onclick="showOrderModal()">新建订单</button>
+            </div>
+            <div class="table-container">
+                <table class="table" id="orders-table">
+                    <thead>
+                        <tr>
+                            <th>订单号</th>
+                            <th>学生信息</th>
+                            <th>教材信息</th>
+                            <th>数量</th>
+                            <th>总金额</th>
+                            <th>订购日期</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 收费管理区域 -->
+        <div id="payments-section" class="section">
+            <h2>收费管理</h2>
+            <div class="search-box">
+                <input type="text" id="payment-search" placeholder="搜索收费记录..." onkeyup="searchPayments()">
+                <button class="btn" onclick="showPaymentModal()">登记收费</button>
+            </div>
+            <div class="table-container">
+                <table class="table" id="payments-table">
+                    <thead>
+                        <tr>
+                            <th>收据号</th>
+                            <th>订单号</th>
+                            <th>缴费金额</th>
+                            <th>缴费日期</th>
+                            <th>缴费方式</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 发放管理区域 -->
+        <div id="distributions-section" class="section">
+            <h2>发放管理</h2>
+            <div class="search-box">
+                <input type="text" id="distribution-search" placeholder="搜索发放记录..." onkeyup="searchDistributions()">
+                <button class="btn" onclick="showDistributionModal()">登记发放</button>
+            </div>
+            <div class="table-container">
+                <table class="table" id="distributions-table">
+                    <thead>
+                        <tr>
+                            <th>发放ID</th>
+                            <th>订单号</th>
+                            <th>发放数量</th>
+                            <th>发放日期</th>
+                            <th>发放人</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 教材模态框 -->
+    <div id="textbook-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="textbook-modal-title">添加教材</h3>
+            <form id="textbook-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ISBN *</label>
+                        <input type="text" id="isbn" required>
+                    </div>
+                    <div class="form-group">
+                        <label>价格 *</label>
+                        <input type="number" step="0.01" id="price" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>书名 *</label>
+                    <input type="text" id="title" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>作者</label>
+                        <input type="text" id="author">
+                    </div>
+                    <div class="form-group">
+                        <label>出版社</label>
+                        <input type="text" id="publisher">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>版次</label>
+                        <input type="text" id="edition">
+                    </div>
+                    <div class="form-group">
+                        <label>库存数量</label>
+                        <input type="number" id="stock_quantity" value="0">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">保存</button>
+                <button type="button" class="btn btn-danger" onclick="hideModal('textbook-modal')">取消</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 学生模态框 -->
+    <div id="student-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="student-modal-title">添加学生</h3>
+            <form id="student-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>学号 *</label>
+                        <input type="text" id="student_id" required>
+                    </div>
+                    <div class="form-group">
+                        <label>姓名 *</label>
+                        <input type="text" id="student_name" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>班级 *</label>
+                        <input type="text" id="class_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>联系电话</label>
+                        <input type="text" id="contact_phone">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>邮箱</label>
+                    <input type="email" id="student_email">
+                </div>
+                <button type="submit" class="btn btn-success">保存</button>
+                <button type="button" class="btn btn-danger" onclick="hideModal('student-modal')">取消</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 订购模态框 -->
+    <div id="order-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="order-modal-title">新建订单</h3>
+            <form id="order-form">
+                <div class="form-group">
+                    <label>选择学生 *</label>
+                    <select id="order_student_id" required>
+                        <option value="">请选择学生</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>选择教材 *</label>
+                    <select id="order_textbook_id" required>
+                        <option value="">请选择教材</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>订购数量 *</label>
+                        <input type="number" id="order_quantity" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>订购日期</label>
+                        <input type="date" id="order_date">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>总金额</label>
+                    <input type="text" id="order_total" readonly style="background-color: #f8f9fa;">
+                </div>
+                <button type="submit" class="btn btn-success">提交订单</button>
+                <button type="button" class="btn btn-danger" onclick="hideModal('order-modal')">取消</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
